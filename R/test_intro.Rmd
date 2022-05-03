@@ -1,0 +1,57 @@
+---
+#title: "intro"
+#author: "Juan Quinonez"
+#date: '2022-05-01'
+output: html_document
+---
+```{r eval=TRUE, include=FALSE}
+library(tidyverse)
+library(scales)
+library(readxl)
+
+Sys.setlocale(locale = "es_ES.UTF-8")
+
+# ---- Data ----
+# info
+info <- read_excel("../data/info_ipc.xlsx", 
+                   sheet = "info") %>% 
+  select(name, Ponderacion)
+
+# Indices
+articulos <- read_excel("../data/info_ipc.xlsx", 
+                        sheet = "articulos") 
+
+# ---- Transformations ----
+
+# General
+articulos <- articulos %>% 
+  mutate(across(!fecha,
+                .fns = list(vm = ~(./lag(., n = 1))*100-100,
+                            vi = ~(./lag(.,n = 12))*100-100,
+                            inc_vi = ~info$Ponderacion[[which(info$name == cur_column())]] *
+                              ((./lag(.,n = 12))*100-100) *
+                              (lag(.,n = 12) / lag(indice_general_inflacion,n = 12)))))
+# Intro
+inf_actual <- articulos %>% 
+  filter(fecha == max(fecha)) %>% 
+  select(fecha, starts_with('indice'))
+
+top_grupos <- articulos %>% 
+  filter(fecha == max(fecha)) %>% 
+  select(fecha, 
+         #(starts_with("indice") & contains('inflacion_v')),
+         ends_with("grupo_vi"), 
+         ends_with("grupo_inc_vi")) %>%
+  pivot_longer(!fecha,
+               names_to = c("grupo",".var"),
+               names_sep = "grupo_") %>% 
+  mutate(grupo = str_replace_all(grupo, (c('_grupo' = '',
+                                           '_' = ' '))),
+         grupo = str_to_title(grupo)) %>% 
+  pivot_wider(names_from = ".var",
+              values_from = "value") %>% 
+  arrange(desc(inc_vi))
+
+```
+
+El Banco Central de la República Dominicana (BCRD) informa que el índice de precios al consumidor (IPC) de `r format(inf_actual$fecha, "%B %Y")` registró una variación interanual de `r percent(inf_actual$indice_general_inflacion_vi/100, accuracy = 0.01)`, mientras que la variación mensual se colocó en `r percent(inf_actual$indice_general_inflacion_vm/100, accuracy = 0.01)`. Los grupos de mayor incidencia en la inflación interanual fueron `r paste0(top_grupos$grupo[1]," (",percent(top_grupos$vi[1]/100, accuracy = 0.01),")")`, `r paste0(top_grupos$grupo[2]," (",percent(top_grupos$vi[2]/100, accuracy = 0.01),")")`, y `r paste0(top_grupos$grupo[3]," (",percent(top_grupos$vi[3]/100, accuracy = 0.01),")")`.
