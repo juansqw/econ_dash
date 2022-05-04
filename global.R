@@ -19,6 +19,10 @@ info <- read_excel("./data/info_ipc.xlsx",
 articulos <- read_excel("./data/info_ipc.xlsx", 
                         sheet = "articulos") 
 
+# Actividad
+imae <- read_excel('./data/actividad.xlsx',
+                   sheet = 'mensual')
+
 # ---- Transformations ----
 
 # General
@@ -93,7 +97,11 @@ waterfall_data <- articulos %>%
                       'Resto',
                       'Inflación'))
 
-
+# IMAE
+imae <- imae %>% 
+  mutate(across(!fecha,
+                .fns = list(vm = ~(./lag(., n = 1))*100-100,
+                            vi = ~(./lag(.,n = 12))*100-100)))
 
 # ---- Shiny ----
 source('./R/modules.R')

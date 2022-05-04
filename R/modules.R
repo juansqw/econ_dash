@@ -10,7 +10,7 @@ single_line_plot_ui <- function(id){
 single_line_plot_server <- function(id, df, grupo, variacion){
   moduleServer(id, function(input, output, session){
     reacted_df <- reactive({
-      articulos %>% 
+      df %>% 
         select(fecha, starts_with(grupo), ends_with(variacion)) %>% 
         filter(fecha >= as.Date('2010-01-01'))
     }) 

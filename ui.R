@@ -6,7 +6,10 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Inflación", 
                tabName = "inflacion", 
-               icon = icon('money-bill'))
+               icon = icon('money-bill')),
+      menuItem("Actividad Económica", 
+               tabName = "actividad", 
+               icon = icon('chart-line'))
     )
     
   ),
@@ -79,7 +82,23 @@ ui <- dashboardPage(
                                     selected = '_vi'))
               ),
               plotlyOutput('inf_agregado')
-
+      ),
+      tabItem(tabName = 'actividad',
+              h2('Actividad Económica'),
+              h4('Indice Mensual de Actividad Económica'),
+              fluidRow(
+                column(width = 6),
+                column(width = 6,
+                       radioButtons('variacion_imae',
+                                    label = 'Variación',
+                                    inline = TRUE,
+                                    choiceNames = c('Interanual',
+                                                    'Mensual'),
+                                    choiceValues = c('vi',
+                                                     'vm'),
+                                    selected = 'vi')),
+              ),
+              single_line_plot_ui('imae_plot')
       )
     )
   )

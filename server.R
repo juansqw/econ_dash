@@ -45,4 +45,10 @@ server <- function(input, output) {
              showlegend = FALSE)
   })
   
+  # IMAE
+  single_line_plot_server('imae_plot', 
+                          df = imae, 
+                          grupo = 'imae_',
+                          variacion = input$variacion_imae)
+  
 }
