@@ -15,41 +15,34 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
+# ---- Inflacion ----
       tabItem(tabName = 'inflacion',
               h2("Precios"),
+              h4('Incidencias de grupos sobre la inflación interanual'),
+              p('Último mes observado.'),
+              plotlyOutput('waterfall'),
               h4('Inflación total'),
               fluidRow(
                 column(width = 6),
                 column(width = 6,
-                       radioButtons('variacion',
+                       radioButtons('variacion_total',
                                     label = 'Variación',
                                     inline = TRUE,
                                     choiceNames = c('Interanual',
                                                     'Mensual'),
-                                    choiceValues = c('vi',
-                                                     'vm'),
-                                    selected = 'vi')),
-                ),
-              single_line_plot_ui('inf_endyear'),
+                                    choiceValues = c('_vi',
+                                                     '_vm'),
+                                    selected = '_vi'))
+              ),
+              plotlyOutput('inf_total'),
               
               h4('Inflación por grupos'),
               fluidRow(
                 column(width = 6,
                        selectInput("grupo", 
                                    label = "Seleccione grupo",
-                                   choices = c('Alimentos y bebidas no alcoholicas' = 'alimentos_y_bebidas_no_alcoholicas_grupo_',
-                                               'Bebidas alcohólicas y tabaco' = 'bebidas_alcoholicas_y_tabaco_grupo_',
-                                               'Prendas de vestir y calzao' = 'prendas_de_vestir_y_calzado_grupo_',
-                                               'Vivienda' = 'vivienda_grupo_',
-                                               'Muebles y artículos para el hogar' = 'muebles_y_articulos_para_el_hogar_grupo_',
-                                               'Salud' = 'salud_grupo_',
-                                               'Transporte' = 'transporte_grupo_',
-                                               'Comunicaciones' = 'comunicaciones_grupo_',
-                                               'Recreación y cultura' = 'recreacion_y_cultura_grupo_',
-                                               'Educación' = 'educacion_grupo_',
-                                               'Restaurantes y hoteles' = 'restaurantes_y_hoteles_grupo_',
-                                               'Bienes y servicios diversos' = 'bienes_y_servicios_diversos_grupo_'),
-                                   selected = 'alimentos_y_bebidas_no_alcoholicas_grupo_')
+                                   choices = groups,
+                                   selected = 'alimentos_y_bebidas_no_alcoholicas_grupo')
                 ),
                 column(width = 6,
                        radioButtons('variacion_grupo',
@@ -57,11 +50,12 @@ ui <- dashboardPage(
                                     inline = TRUE,
                                     choiceNames = c('Interanual',
                                                     'Mensual'),
-                                    choiceValues = c('vi',
-                                                     'vm'),
-                                    selected = 'vi'))
+                                    choiceValues = c('_vi',
+                                                     '_vm'),
+                                    selected = '_vi'))
               ),
-              single_line_plot_ui('inf_grupo'),
+              plotlyOutput('inf_grupo'),
+              
               h4('Inflación por agregados'),
               fluidRow(
                 column(width = 6,
@@ -82,7 +76,8 @@ ui <- dashboardPage(
                                     selected = '_vi'))
               ),
               plotlyOutput('inf_agregado')
-      ),
+              ),
+# ---- Actividad ----
       tabItem(tabName = 'actividad',
               h2('Actividad Económica'),
               h4('Indice Mensual de Actividad Económica'),
@@ -98,8 +93,12 @@ ui <- dashboardPage(
                                                      'vm'),
                                     selected = 'vi')),
               ),
-              single_line_plot_ui('imae_plot')
-      )
+              plotlyOutput('imae_plot'),
+              h4('PIB por sectores de origen'),
+              var_incidencias_ui('pib_sectores'),
+              h4('PIB por el enfoque del gasto'),
+              var_incidencias_ui('pib_gasto')
+              )
     )
   )
 )

@@ -1,15 +1,7 @@
-x= list("Sales", "Consulting", "Net revenue", "Purchases", "Other expenses", "Profit before tax")
-measure= c("relative", "relative", "total", "relative", "relative", "total")
-text= c("+60", "+80", "", "-40", "-20", "Total")
-y= c(60, 80, 0, -40, -20, 0)
-data = data.frame(x=factor(x,levels=x),measure,text,y)
-
-# Colocar indice_general al final para que se calcule la suma.
-
-dataa <- articulos %>% 
+# Waterfall
+waterfall_data <- articulos %>% 
   filter(fecha == max(fecha)) %>% 
   select(ends_with('_grupo_inc_vi'),indice_general_inflacion_vi) %>% 
-  mutate(resto = indice_general_inflacion_vi - alimentos_y_bebidas_no_alcoholicas_grupo_inc_vi - vivienda_grupo_inc_vi - transporte_grupo_inc_vi) %>% 
   pivot_longer(cols = everything(),
                names_to = 'grupo',
                values_to = 'variacion') %>% 
@@ -31,40 +23,35 @@ dataa <- articulos %>%
                                    "Educacion",
                                    "Restaurantes Y Hoteles",
                                    "Bienes Y Servicios Diversos",
-                                   'Resto',
-                                   'Inflación'))) %>% 
-  filter(grupo != 'Resto')
+                                   'Inflación')))
+
+
+waterfall_data %>% 
+  plot_ly(type = "waterfall", 
+        orientation = 'h',
+        measure = ~measure,
+        x = ~variacion, 
+        y= ~grupo) %>% 
+  layout(yaxis = list(title = ''),
+         xaxis = list(title = 'Incidencia'))
 
 
 
-
-
-
-
-
-plot_ly(
-  dataa, name = "20", type = "waterfall", measure = ~measure,
-  x = ~grupo,  y= ~variacion,
-  connector = list(line = list(color= "rgb(63, 63, 63)"))) 
-
-
-x= list("Sales", "Consulting", "Net revenue", "Purchases", "Other expenses", "Profit before tax")
-measure= c("relative", "relative", "total", "relative", "relative", "total")
-text= c("+60", "+80", "", "-40", "-20", "Total")
-y= c(60, 80, 0, -40, -20, 0)
-data = data.frame(x=factor(x,levels=x),measure,text,y)
-
-fig <- plot_ly(
-  data, name = "20", type = "waterfall", measure = ~measure,
-  x = ~x, textposition = "outside", y= ~y, text =~text,
-  connector = list(line = list(color= "rgb(63, 63, 63)"))) 
+fig <- plot_ly(waterfall_data, x = ~variacion, y = ~grupo, measure = ~measure, type = "waterfall", name = "2018",
+               orientation = "h", connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
 fig <- fig %>%
-  layout(title = "Profit and loss statement 2018",
-         xaxis = list(title = ""),
-         yaxis = list(title = ""),
-         autosize = TRUE,
+  layout(title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
+         xaxis = list(title = "", tickfont = "16", ticks = "outside"),
+         yaxis = list(title = "", type = "category", autorange = "reversed"),
+         xaxis = list(title ="", type = "linear"),
+         margin = c(l = 150),
          showlegend = TRUE)
+
 
 fig
 
-select(fecha, starts_with(input$grupo), ends_with(input$variacion_grupo))
+
+
+
+
+

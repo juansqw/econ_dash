@@ -1,0 +1,13 @@
+name: econ_dash
+title: econ_dash
+username:
+account: juansqw
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6254825
+bundleId: 5881627
+url: https://juansqw.shinyapps.io/econ_dash/
+when: 1651942794.414
+lastSyncTime: 1651942794.41404
+asMultiple: FALSE
+asStatic: FALSE

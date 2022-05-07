@@ -23,6 +23,9 @@ articulos <- read_excel("./data/info_ipc.xlsx",
 imae <- read_excel('./data/actividad.xlsx',
                    sheet = 'mensual')
 
+pib <- read_excel('./data/actividad.xlsx',
+                   sheet = 'trimestral')
+
 # ---- Transformations ----
 
 # General
@@ -33,6 +36,30 @@ articulos <- articulos %>%
                             inc_vi = ~info$Ponderacion[[which(info$name == cur_column())]] *
                               ((./lag(.,n = 12))*100-100) *
                               (lag(.,n = 12) / lag(indice_general_inflacion,n = 12)))))
+
+group_names <- articulos %>% 
+  select(ends_with('_grupo')) %>%
+  pivot_longer(everything(),
+               names_to = 'grupo',
+               values_to = 'variacion') %>% 
+  mutate(grupo = str_replace_all(grupo, (c('grupo' = '',
+                                           '_' = ' '))),
+         grupo = str_to_sentence(grupo)) %>% 
+  select(grupo) %>% 
+  unique() %>% 
+  pull()
+
+groups <- articulos %>% 
+  select(ends_with('_grupo')) %>%
+  pivot_longer(everything(),
+               names_to = 'grupo',
+               values_to = 'variacion') %>% 
+  select(grupo) %>% 
+  unique() %>% 
+  pull(grupo)
+
+names(groups) <- group_names
+
 # Intro
 inf_actual <- articulos %>% 
   filter(fecha == max(fecha)) %>% 
@@ -58,7 +85,6 @@ top_grupos <- articulos %>%
 waterfall_data <- articulos %>% 
   filter(fecha == max(fecha)) %>% 
   select(ends_with('_grupo_inc_vi'),indice_general_inflacion_vi) %>% 
-  mutate(resto = indice_general_inflacion_vi - alimentos_y_bebidas_no_alcoholicas_grupo_inc_vi - vivienda_grupo_inc_vi - transporte_grupo_inc_vi) %>% 
   pivot_longer(cols = everything(),
                names_to = 'grupo',
                values_to = 'variacion') %>% 
@@ -80,22 +106,7 @@ waterfall_data <- articulos %>%
                                    "Educacion",
                                    "Restaurantes Y Hoteles",
                                    "Bienes Y Servicios Diversos",
-                                   'Resto',
-                                   'Inflación'))) %>% 
-  filter(grupo %in% c("Alimentos Y Bebidas No Alcoholicas", 
-                      #"Bebidas Alcoholicas Y Tabaco",
-                      #"Prendas De Vestir Y Calzado",
-                      "Vivienda",
-                      #"Muebles Y Articulos Para El Hogar",
-                      #"Salud",
-                      "Transporte",
-                      #"Comunicaciones",
-                      #"Recreacion Y Cultura",
-                      #"Educacion",
-                      #"Restaurantes Y Hoteles",
-                      #"Bienes Y Servicios Diversos",
-                      'Resto',
-                      'Inflación'))
+                                   'Inflación'))) 
 
 # IMAE
 imae <- imae %>% 

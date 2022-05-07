@@ -2,17 +2,69 @@
 
 server <- function(input, output) {
   
+  # Waterfall
+  output$waterfall <- renderPlotly({
+    waterfall_data %>% 
+      plot_ly(type = "waterfall", 
+              orientation = 'h',
+              measure = ~measure,
+              x = ~variacion, 
+              y= ~grupo) %>% 
+      layout(yaxis = list(title = ''),
+             xaxis = list(title = 'Incidencia'))
+  })
+  
   # Inflacion total
-  single_line_plot_server('inf_endyear', 
-                          df = articulos, 
-                          grupo ="indice_general_inflacion_",
-                          variacion = input$variacion)
+  total_df <- reactive({
+    articulos %>% 
+      select(fecha, starts_with('indice_general_inflacion'), ends_with(input$variacion_total)) %>% 
+      filter(fecha >= as.Date('2010-01-01'))
+  }) 
+  
+  output$inf_total <- renderPlotly({
+    total_df() %>% 
+      plot_ly(x = ~fecha) %>% 
+      add_trace(y = ~.data[[paste0('indice_general_inflacion', input$variacion_total)]], 
+                name = 'Variación', 
+                type = 'scatter', 
+                mode = 'lines',
+                line = list(width = 4)) %>% 
+      layout(xaxis = list(title = "",
+                          dtick = "M1", 
+                          tickformat="%b\n%Y",
+                          ticklabelmode="period",
+                          range = c('2020-03-01','2022-03-01'),
+                          rangeslider = list(type = "date")),
+             yaxis = list(title = 'Variación'),
+             hovermode = 'x',
+             showlegend = FALSE)
+  })
   
   # Inflacion por grupos
-  single_line_plot_server('inf_grupo', 
-                          df = articulos, 
-                          grupo = input$grupo,
-                          variacion = input$variacion_grupo)
+  grupos_df <- reactive({
+    articulos %>% 
+      select(fecha, starts_with(input$grupo), ends_with(input$variacion_grupo)) %>% 
+      filter(fecha >= as.Date('2010-01-01'))
+  }) 
+  
+  output$inf_grupo <- renderPlotly({
+    grupos_df() %>% 
+      plot_ly(x = ~fecha) %>% 
+      add_trace(y = ~.data[[paste0(input$grupo, input$variacion_grupo)]], 
+                name = 'Variación', 
+                type = 'scatter', 
+                mode = 'lines',
+                line = list(width = 4)) %>% 
+      layout(xaxis = list(title = "",
+                          dtick = "M1", 
+                          tickformat="%b\n%Y",
+                          ticklabelmode="period",
+                          range = c('2020-03-01','2022-03-01'),
+                          rangeslider = list(type = "date")),
+             yaxis = list(title = 'Variación'),
+             hovermode = 'x',
+             showlegend = FALSE)
+  })
   
   # Inflacion por agregado
   agregado_ipc <- reactive({
@@ -36,19 +88,47 @@ server <- function(input, output) {
                 mode = 'lines',
                 line = list(width = 4)) %>% 
       layout(xaxis = list(title = "",
-                          range = c('2020-03-01','2022-03-01'),
                           dtick = "M1", 
                           tickformat="%b\n%Y",
-                          ticklabelmode="period"),
+                          ticklabelmode="period",
+                          range = c('2020-03-01','2022-03-01'),
+                          rangeslider = list(type = "date")),
              yaxis = list(title = 'Variación'),
              hovermode = 'x',
              showlegend = FALSE)
   })
   
   # IMAE
-  single_line_plot_server('imae_plot', 
-                          df = imae, 
-                          grupo = 'imae_',
-                          variacion = input$variacion_imae)
+  output$imae_plot <- renderPlotly({
+    imae %>% 
+      plot_ly(x = ~fecha) %>% 
+      add_trace(y = ~.data[[paste0('imae_', input$variacion_imae)]], 
+                name = 'Variación', 
+                type = 'scatter', 
+                mode = 'lines',
+                line = list(width = 4)) %>% 
+      layout(xaxis = list(title = "",
+                          dtick = "M1", 
+                          tickformat="%b\n%Y",
+                          ticklabelmode="period",
+                          range = c('2020-03-01','2022-03-01'),
+                          rangeslider = list(type = "date")),
+             yaxis = list(title = 'Variación'),
+             hovermode = 'x',
+             showlegend = FALSE)
+  })
+  
+  # PIB por sectores
+  var_incidencias_server(id = 'pib_sectores',
+                         df = pib,
+                         var = 'pib',
+                         incidencia = c('agro', 'indu', 'serv', 'taxes'))
+  
+  # PIB por gasto
+  var_incidencias_server(id = 'pib_gasto',
+                         df = pib,
+                         var = 'pib',
+                         incidencia = c('consumo', 'inversion', 'exports', 'imports'))
+
   
 }
